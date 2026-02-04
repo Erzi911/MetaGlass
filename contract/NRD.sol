@@ -8,9 +8,8 @@ contract Nerd is ERC20, Ownable{
     address[] public hs;
     mapping(address=>uint256) public position;
 
-}
-event queue(address indexed user, uint256 amount, string status);
-constructor() ERC20("MetaGlass", "MTG") {
+event Queue(address indexed user, uint256 amount, string status);
+constructor() ERC20("MetaGlass", "MTG") Ownable(msg.sender){
     _mint(msg.sender, 100*10**18);
     hs.push(msg.sender);
 }
@@ -30,11 +29,11 @@ function update()public{
         uint256 bal=balanceOf(u);
         uint256 newPos=1;
         for(uint j=0;j<hs.length;j++){
-            address v=hs[j];
-            if(bal<balanceOf(v)) newPos++;
+            if(bal<balanceOf(hs[j])) newPos++;
         }
         position[u]=newPos;
     }
-    emit queue(msg.sender, balanceOf(msg.sender), "updated");
+    emit Queue(msg.sender, balanceOf(msg.sender), "updated");
 
+}
 }
