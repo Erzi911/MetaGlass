@@ -16,6 +16,7 @@ constructor() ERC20("MetaGlass", "MTG") {
 function mint(address to, uint256 kol) public onlyOwner {
     require(totalSupply() + kol <= 1000*10**18);
     require(balanceOf(to) + kol <= maxU);
+    if (balanceOf(to) == 0) hs.push(to);
     _mint(to, kol);
 }
 function status(address acc) public view returns(string memory){
