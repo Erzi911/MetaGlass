@@ -17,6 +17,4 @@ function mint(address to, uint256 kol) public onlyOwner {
 function status(address acc) public view returns(string memory){
     uint256 b=balanceOf(acc);
 }
-function restrict(){}
-
-function queue(){}
+function update(){}
