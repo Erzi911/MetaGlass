@@ -19,7 +19,13 @@ function mint(address to, uint256 kol) public onlyOwner {
     if (balanceOf(to) == 0) hs.push(to);
     _mint(to, kol);
 }
-function status(address acc) public view returns(string memory){
-    uint256 b=balanceOf(acc);
+function status(address acc) public view returns(uint256 b, uint256 pos){
+    b=balanceOf(acc);
+    pos=1;
+    for(uint i=0; i<hs.length;i++){
+        if(balanceOf(hs[i])>b){
+            pos++;
+        }
+    }
 }
 function update(){}
