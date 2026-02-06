@@ -28,6 +28,13 @@ constructor(address _feeRecipient) ERC20("MetaGlass", "MTG") Ownable(msg.sender)
 function hsLen() external view returns(uint256){
     return hs.length;
 }
+function setFee(uint16 _feeBps, address _feeRecipient) external onlyOwner {
+   require(_feeRecipient!=address(0));
+   require(_feeBps<=1000);
+   feeBps=_feeBps;
+   feeRecipient=_feeRecipient;
+   emit FeeUpdated(_feeBps, _feeRecipient);
+}
 function mint(address to, uint256 kol) public onlyOwner {
     require(totalSupply() + kol <= 1000*10**18);
     require(balanceOf(to) + kol <= maxU);
