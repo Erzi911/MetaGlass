@@ -2,167 +2,137 @@
 pragma solidity ^0.8.20;
 
 interface INerd {
-  function mint(address to, uint256 kol) external;
-  function balanceOf(address acc) external view returns (uint256);
+    function mint(address to, uint256 kol) external;
+    function update() external;
+    function balanceOf(address acc) external view returns (uint256);
+    function position(address acc) external view returns (uint256);
 }
 
-contract Crowdfund {
-  struct Campaign {
-    string title;
-    uint256 goal;
-    uint256 deadline;
-    uint256 totalRaised;
-    bool finalized;
-    bool successful;
-    address creator;
-  }
-
-  address public owner;
-  INerd public nerd;
-  address public treasury;
-
-  // addresses allowed to create campaigns in addition to owner
-  mapping(address => bool) public campaignCreators;
-
-  uint256 public constant REWARD_RATE = 100 * 1e18; // 100 NRD per 1 ETH
-
-  uint256 public campaignCount;
-  mapping(uint256 => Campaign) public campaigns;
-  mapping(uint256 => mapping(address => uint256)) public contributions;
-
-  modifier onlyOwner() {
-    require(msg.sender == owner, "not owner");
-    _;
-  }
-
-  modifier onlyCreator() {
-    require(msg.sender == owner || campaignCreators[msg.sender], "not creator");
-    _;
-  }
-
-  event OwnershipTransferred(address indexed prev, address indexed next);
-  event CampaignCreatorSet(address indexed user, bool allowed);
-  event CampaignCreated(uint256 indexed id, address indexed creator, string title, uint256 goal, uint256 deadline);
-  event Contributed(uint256 indexed id, address indexed contributor, uint256 amountEth, uint256 rewardTokens);
-  event CampaignFinalized(uint256 indexed id, bool successful);
-  event RefundClaimed(uint256 indexed id, address indexed contributor, uint256 amount);
-
-  constructor(address nerdAddress, address treasury_) {
-    require(nerdAddress != address(0), "nerd zero");
-    require(treasury_ != address(0), "treasury zero");
-    owner = msg.sender;
-    emit OwnershipTransferred(address(0), msg.sender);
-    nerd = INerd(nerdAddress);
-    treasury = treasury_;
-  }
-
-  function setCampaignCreator(address user, bool allowed) external onlyOwner {
-    require(user != address(0), "zero user");
-    campaignCreators[user] = allowed;
-    emit CampaignCreatorSet(user, allowed);
-  }
-
-  function transferOwnership(address newOwner) external onlyOwner {
-    require(newOwner != address(0), "zero owner");
-    emit OwnershipTransferred(owner, newOwner);
-    owner = newOwner;
-  }
-
-  function setTreasury(address newTreasury) external onlyOwner {
-    require(newTreasury != address(0), "zero treasury");
-    treasury = newTreasury;
-  }
-
-  function createCampaign(string calldata title, uint256 goalWei, uint256 durationSeconds) external onlyCreator returns (uint256 id) {
-    require(bytes(title).length > 0, "title empty");
-    require(goalWei > 0, "goal=0");
-    require(durationSeconds > 0, "duration=0");
-
-    id = ++campaignCount;
-    Campaign storage c = campaigns[id];
-    c.title = title;
-    c.goal = goalWei;
-    c.deadline = block.timestamp + durationSeconds;
-    c.creator = msg.sender;
-
-    emit CampaignCreated(id, msg.sender, title, goalWei, c.deadline);
-  }
-
-  function contribute(uint256 id) external payable {
-    Campaign storage c = campaigns[id];
-    require(bytes(c.title).length != 0, "campaign not found");
-    require(block.timestamp < c.deadline, "ended");
-    require(msg.value > 0, "no value");
-
-    c.totalRaised += msg.value;
-    contributions[id][msg.sender] += msg.value;
-
-    uint256 tokensOut = (msg.value * REWARD_RATE) / 1e18;
-    nerd.mint(msg.sender, tokensOut);
-
-    emit Contributed(id, msg.sender, msg.value, tokensOut);
-  }
-
-  function finalizeCampaign(uint256 id) external {
-    Campaign storage c = campaigns[id];
-    require(bytes(c.title).length != 0, "campaign not found");
-    require(block.timestamp >= c.deadline, "not ended");
-    require(!c.finalized, "finalized");
-
-    c.finalized = true;
-    if (c.totalRaised >= c.goal) {
-      c.successful = true;
-      (bool ok, ) = c.creator.call{value: c.totalRaised}("");
-      require(ok, "payout failed");
+contract SmartCont {
+    address public owner;
+    modifier onlyOwner() {
+        require(msg.sender == owner);
+        _;
     }
 
-    emit CampaignFinalized(id, c.successful);
-  }
+    event OwnershipTransferred(address indexed prev, address indexed next);
 
-  function claimRefund(uint256 id) external {
-    Campaign storage c = campaigns[id];
-    require(c.finalized, "not finalized");
-    require(!c.successful, "successful");
-    uint256 amount = contributions[id][msg.sender];
-    require(amount > 0, "no contribution");
+    function transferOwnership(address newOwner) external onlyOwner {
+        require(newOwner != address(0));
+        emit OwnershipTransferred(owner, newOwner);
+        owner = newOwner;
+    }
 
-    contributions[id][msg.sender] = 0;
-    (bool ok, ) = msg.sender.call{value: amount}("");
-    require(ok, "refund failed");
+    INerd public nerd;
 
-    emit RefundClaimed(id, msg.sender, amount);
-  }
+    bool public saleActive = true;
+    address public treasury;
+    uint256 public priceWeiPerToken;
 
-  function getCampaign(uint256 id)
-    external
-    view
-    returns (
-      string memory title,
-      uint256 goal,
-      uint256 deadline,
-      uint256 totalRaised,
-      bool finalized,
-      bool successful,
-      address creator
-    )
-  {
-    Campaign storage c = campaigns[id];
-    require(bytes(c.title).length != 0, "campaign not found");
-    return (c.title, c.goal, c.deadline, c.totalRaised, c.finalized, c.successful, c.creator);
-  }
+    uint256 public dropId;
+    bool public dropActive;
+    uint256 public glassesPriceWei;
+    uint256 public glassesLeft;
+    uint256 public maxPositionAllowed;
 
-  function getMyContribution(uint256 id) external view returns (uint256) {
-    return contributions[id][msg.sender];
-  }
+    uint256 public lastQueueUpdateTs;
+    uint256 public maxQueueStalenessSeconds = 15 minutes;
 
-  function getCampaignsCount() external view returns (uint256) {
-    return campaignCount;
-  }
+    mapping(address => uint256) public lastBoughtDrop;
 
-  function withdrawLeftover(address to) external onlyOwner {
-    require(to != address(0), "zero address");
-    (bool ok, ) = to.call{value: address(this).balance}("");
-    require(ok, "withdraw failed");
-  }
+    event SaleParamsUpdated(bool saleActive, uint256 priceWeiPerToken, address indexed treasury);
+    event TokensBought(address indexed buyer, uint256 ethIn, uint256 tokensOut);
+    event QueueRefreshed(address indexed caller, uint256 atTs);
+    event DropConfigured(uint256 indexed dropId, bool dropActive, uint256 priceWei, uint256 left, uint256 maxPos);
+    event GlassesBought(uint256 indexed dropId, address indexed buyer, uint256 position, uint256 paidWei);
+
+    constructor(address nerdAddress, address treasury_, uint256 priceWeiPerToken_) {
+        require(nerdAddress != address(0));
+        require(treasury_ != address(0));
+        owner = msg.sender;
+        emit OwnershipTransferred(address(0), msg.sender);
+        nerd = INerd(nerdAddress);
+        treasury = treasury_;
+        priceWeiPerToken = priceWeiPerToken_;
+        emit SaleParamsUpdated(saleActive, priceWeiPerToken, treasury);
+    }
+
+    function setSaleParams(bool saleActive_, uint256 priceWeiPerToken_, address treasury_) external onlyOwner {
+        require(treasury_ != address(0));
+        saleActive = saleActive_;
+        priceWeiPerToken = priceWeiPerToken_;
+        treasury = treasury_;
+        emit SaleParamsUpdated(saleActive, priceWeiPerToken, treasury);
+    }
+
+    function setDropActive(bool active) external onlyOwner {
+        dropActive = active;
+    }
+
+    function configureNewDrop(bool active, uint256 priceWei, uint256 left, uint256 maxPos) external onlyOwner {
+        dropId += 1;
+        dropActive = active;
+        glassesPriceWei = priceWei;
+        glassesLeft = left;
+        maxPositionAllowed = maxPos;
+        emit DropConfigured(dropId, dropActive, glassesPriceWei, glassesLeft, maxPositionAllowed);
+    }
+
+    function advanceWindow(uint256 newMaxPos) external onlyOwner {
+        require(newMaxPos >= maxPositionAllowed);
+        maxPositionAllowed = newMaxPos;
+    }
+
+    function setQueueStaleness(uint256 seconds_) external onlyOwner {
+        require(seconds_ >= 60);
+        maxQueueStalenessSeconds = seconds_;
+    }
+
+    function buyTokens() external payable {
+        require(saleActive);
+        require(priceWeiPerToken > 0);
+        require(msg.value > 0);
+
+        uint256 tokensOut = (msg.value * 1e18) / priceWeiPerToken;
+        require(tokensOut > 0);
+
+        nerd.mint(msg.sender, tokensOut);
+        emit TokensBought(msg.sender, msg.value, tokensOut);
+
+        (bool ok, ) = treasury.call{value: msg.value}("");
+        require(ok);
+    }
+
+    function refreshQueue() external {
+        nerd.update();
+        lastQueueUpdateTs = block.timestamp;
+        emit QueueRefreshed(msg.sender, lastQueueUpdateTs);
+    }
+
+    function buyGlasses() external payable {
+        require(dropActive);
+        require(glassesLeft > 0);
+        require(msg.value == glassesPriceWei);
+        require(lastBoughtDrop[msg.sender] != dropId);
+        require(lastQueueUpdateTs != 0);
+        require(block.timestamp - lastQueueUpdateTs <= maxQueueStalenessSeconds);
+        require(nerd.balanceOf(msg.sender) > 0);
+
+        uint256 pos = nerd.position(msg.sender);
+        require(pos > 0 && pos <= maxPositionAllowed);
+
+        lastBoughtDrop[msg.sender] = dropId;
+        glassesLeft -= 1;
+
+        emit GlassesBought(dropId, msg.sender, pos, msg.value);
+
+        (bool ok, ) = treasury.call{value: msg.value}("");
+        require(ok);
+    }
+
+    function withdraw(address to) external onlyOwner {
+        require(to != address(0));
+        (bool ok, ) = to.call{value: address(this).balance}("");
+        require(ok);
+    }
 }
-
