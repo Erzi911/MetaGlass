@@ -65,4 +65,35 @@ function update()public{
     emit Queue(msg.sender, balanceOf(msg.sender), "updated");
 
 }
+function _update(address from, address to, uint256 amount) internal override{
+    if(from!=address(0) && to!=address&&amount>0){
+        if(!inHs[to]){
+            hs.push(to);
+            inHs[to]=true;
+        }
+        if (!feeExempt[from] && !feeExempt[to] && feeBps > 0) {
+                uint256 fee = (amount * feeBps) / 10_000;
+                if (fee > 0) {
+                    uint256 net = amount - fee;
+                    require(balanceOf(to) + net <= maxU);
+                    super._update(from, feeRecipient, fee);
+                    super._update(from, to, net);
+                    return;
+                }
+            }
+            require(balanceOf(to) + amount <= maxU);
+            super._update(from, to, amount);
+            return;
+        }
+
+        if (to != address(0) && amount > 0) {
+            require(balanceOf(to) + amount <= maxU);
+            if (!inHs[to]) {
+                hs.push(to);
+                inHs[to] = true;
+            }
+        }
+        super._update(from, to, amount);
+    }
+}
 }
