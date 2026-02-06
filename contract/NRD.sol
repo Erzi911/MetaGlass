@@ -35,6 +35,10 @@ function setFee(uint16 _feeBps, address _feeRecipient) external onlyOwner {
    feeRecipient=_feeRecipient;
    emit FeeUpdated(_feeBps, _feeRecipient);
 }
+function setFeeExempt(address user, bool exempt) external onlyOwner {
+    feeExempt[user]=exempt;
+    emit FeeExemptSet(user, exempt);
+}   
 function mint(address to, uint256 kol) public onlyOwner {
     require(totalSupply() + kol <= 1000*10**18);
     require(balanceOf(to) + kol <= maxU);
