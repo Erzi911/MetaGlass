@@ -14,10 +14,15 @@ contract Nerd is ERC20, Ownable{
 
 event Queue(address indexed user, uint256 amount, string status);
 event FeeUpdated(uint16 feeBps, address indexed feeRecipient);
-event FeeExemptSet(address indexed user, bool exempt);
-constructor() ERC20("MetaGlass", "MTG") Ownable(msg.sender){
+event FeeExemptSet(address indexed user, bool exempt);  
+constructor(address _feeRecipient) ERC20("MetaGlass", "MTG") Ownable(msg.sender){
+    require(_feeRecipient!=address(0));
+    feeRecipient=_feeRecipient;
     _mint(msg.sender, 100*10**18);
     hs.push(msg.sender);
+    feeExempt[msg.sender]=true;
+    feeExempt[_feeRecipient]=t
+    feeExempt[address(this)]=true;
 }
 function mint(address to, uint256 kol) public onlyOwner {
     require(totalSupply() + kol <= 1000*10**18);
