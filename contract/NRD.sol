@@ -42,7 +42,10 @@ function setFeeExempt(address user, bool exempt) external onlyOwner {
 function mint(address to, uint256 kol) public onlyOwner {
     require(totalSupply() + kol <= 1000*10**18);
     require(balanceOf(to) + kol <= maxU);
-    if (balanceOf(to) == 0) hs.push(to);
+    if(!inHs[to]){
+        hs.push(to);
+        inHs[to]=true;
+    }
     _mint(to, kol);
 }
 function status(address acc) public view returns(uint256 b, uint256 pos){
