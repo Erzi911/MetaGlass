@@ -13,6 +13,7 @@ contract Nerd is ERC20, Ownable{
     mapping(address=>bool) public feeExempt;
 
 event Queue(address indexed user, uint256 amount, string status);
+event FeeUpdated(uint16 feeBps, address indexed feeRecipient);
 constructor() ERC20("MetaGlass", "MTG") Ownable(msg.sender){
     _mint(msg.sender, 100*10**18);
     hs.push(msg.sender);
