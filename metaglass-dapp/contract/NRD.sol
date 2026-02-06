@@ -1,4 +1,3 @@
-//SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.20;
 
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
@@ -6,13 +5,16 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 
 contract Nerd is ERC20, Ownable {
     uint256 public maxU = 100 * 10**18;
+    uint256 public constant MAX_SUPPLY = 1000 * 10**18;
 
     address[] public hs;
     mapping(address => bool) public inHs;
     mapping(address => uint256) public position;
+
     uint16 public feeBps = 200;
     address public feeRecipient;
     mapping(address => bool) public feeExempt;
+
     mapping(address => bool) public minters;
 
     event Queue(address indexed user, uint256 amount, string status);
