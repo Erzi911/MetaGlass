@@ -7,6 +7,7 @@ contract Nerd is ERC20, Ownable{
     uint256 public maxU=100*10**18;
     address[] public hs;
     mapping(address=>uint256) public position;
+    mapping(address=>bool) public inHs;
 
 event Queue(address indexed user, uint256 amount, string status);
 constructor() ERC20("MetaGlass", "MTG") Ownable(msg.sender){
@@ -32,7 +33,7 @@ function update()public{
             if(bal<balanceOf(hs[j])) newPos++;
         }
         position[u]=newPos;
-    }
+    } 
     emit Queue(msg.sender, balanceOf(msg.sender), "updated");
 
 }
