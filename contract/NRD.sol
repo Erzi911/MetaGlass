@@ -23,6 +23,10 @@ constructor(address _feeRecipient) ERC20("MetaGlass", "MTG") Ownable(msg.sender)
     feeExempt[msg.sender]=true;
     feeExempt[_feeRecipient]=t
     feeExempt[address(this)]=true;
+    
+}
+function hsLen() external view returns(uint256){
+    return hs.length;
 }
 function mint(address to, uint256 kol) public onlyOwner {
     require(totalSupply() + kol <= 1000*10**18);
