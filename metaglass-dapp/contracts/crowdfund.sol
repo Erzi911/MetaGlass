@@ -21,10 +21,9 @@ contract Crowdfund {
   INerd public nerd;
   address public treasury;
 
-  // addresses allowed to create campaigns in addition to owner
   mapping(address => bool) public campaignCreators;
 
-  uint256 public constant REWARD_RATE = 100 * 1e18; // 100 NRD per 1 ETH
+  uint256 public constant REWARD_RATE = 100 * 1e18; 
 
   uint256 public campaignCount;
   mapping(uint256 => Campaign) public campaigns;
