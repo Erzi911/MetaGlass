@@ -1,0 +1,170 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>MetaGlass SmartContract</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
+    rel="stylesheet"
+  />
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+  <div class="bg-grid"></div>
+  <div class="container">
+    <header class="header">
+      <h1><span class="logo">MetaGlass</span> </h1>
+      <p class="tagline">Token sale • Queue refresh • Glasses drop</p>
+      <nav class="nav-tabs">
+        <a href="./index.html" class="nav-tab">Crowdfund</a>
+        <a href="./smartcont.html" class="nav-tab active">Drop</a>
+      </nav>
+    </header>
+
+    <div class="main-layout">
+      <div class="card card-wallet card-full">
+        <div class="card-header">
+          <h3>Wallet</h3>
+          <div class="badges">
+            <span class="badge">
+              <span class="badge-label">Chain</span>
+              <span id="chainId">-</span>
+            </span>
+            <span class="badge badge-status">
+              <span class="badge-label">Network</span>
+              <span id="netStatus">-</span>
+            </span>
+          </div>
+        </div>
+
+        <button id="btnConnect" class="btn btn-primary">
+          <span class="btn-icon"></span>
+          Connect MetaMask
+        </button>
+
+        <div class="contract-info">
+          <div class="info-row"><span>Nerd</span><code id="nerdAddr">-</code></div>
+          <div class="info-row"><span>SmartCont</span><code id="smartAddr">-</code></div>
+        </div>
+
+        <div class="kv">
+          <div class="kv-row">
+            <span>Address</span>
+            <span id="myAddr" class="value">-</span>
+          </div>
+          <div class="kv-row">
+            <span>ETH Balance</span>
+            <span id="ethBal" class="value">-</span>
+          </div>
+          <div class="kv-row">
+            <span>NRD Balance</span>
+            <span id="myBal" class="value">-</span>
+          </div>
+          <div class="kv-row">
+            <span>Queue Position</span>
+            <span id="myPos" class="value">-</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="three-col">
+        <div class="card">
+          <h3>Token Sale (buy NRD)</h3>
+          <div class="stats">
+            <div class="stat">
+              <span class="stat-label">Sale active</span>
+              <b id="saleActive">-</b>
+            </div>
+            <div class="stat">
+              <span class="stat-label">Price</span>
+              <b><span id="pricePerToken">-</span> ETH / NRD</b>
+            </div>
+            <div class="stat">
+              <span class="stat-label">Treasury</span>
+              <b class="address-long" id="treasuryAddr">-</b>
+            </div>
+          </div>
+
+          <div class="input-group">
+            <label>Amount (ETH to spend)</label>
+            <input id="buyEthAmount" type="text" value="0.01" placeholder="0.01" />
+          </div>
+          <p class="footnote">
+            Estimated NRD out: <span id="buyTokensEstimate">-</span>
+          </p>
+          <button id="btnBuyTokens" class="btn btn-primary">Buy NRD via SmartCont</button>
+          <div class="msg" id="buyTokensMsg"></div>
+        </div>
+
+        <div class="card">
+          <h3>Queue</h3>
+          <div class="stats compact">
+            <div class="stat">
+              <span class="stat-label">Last refresh</span>
+              <b id="lastQueueUpdate">-</b>
+            </div>
+            <div class="stat">
+              <span class="stat-label">Max staleness</span>
+              <b><span id="maxQueueStaleness">-</span> s</b>
+            </div>
+          </div>
+          <button id="btnRefreshQueue" class="btn btn-primary">Refresh Queue</button>
+          <div class="msg" id="queueMsg"></div>
+        </div>
+
+        <div class="card">
+          <h3>Glasses Drop</h3>
+          <div class="stats compact">
+            <div class="stat">
+              <span class="stat-label">Drop ID</span>
+              <b id="dropId">-</b>
+            </div>
+            <div class="stat">
+              <span class="stat-label">Status</span>
+              <b id="dropStatus">-</b>
+            </div>
+            <div class="stat">
+              <span class="stat-label">Active</span>
+              <b id="dropActive">-</b>
+            </div>
+            <div class="stat">
+              <span class="stat-label">Price</span>
+              <b><span id="glassesPrice">-</span> ETH</b>
+            </div>
+            <div class="stat">
+              <span class="stat-label">Glasses left</span>
+              <b id="glassesLeft">-</b>
+            </div>
+            <div class="stat">
+              <span class="stat-label">Max position allowed</span>
+              <b id="maxPositionAllowed">-</b>
+            </div>
+            <div class="stat">
+              <span class="stat-label">Your position</span>
+              <b id="myPositionForDrop">-</b>
+            </div>
+            <div class="stat">
+              <span class="stat-label">You already bought?</span>
+              <b id="alreadyBoughtDrop">-</b>
+            </div>
+            <div class="stat">
+              <span class="stat-label">Queue fresh?</span>
+              <b id="queueFresh">-</b>
+            </div>
+          </div>
+          <p class="footnote" id="dropInfo">-</p>
+          <button id="btnBuyGlasses" class="btn btn-primary">Buy Glasses</button>
+          <div class="msg" id="buyGlassesMsg"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="./config.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/ethers@6.13.2/dist/ethers.umd.min.js"></script>
+  <script src="./smartcont.js"></script>
+</body>
+</html>

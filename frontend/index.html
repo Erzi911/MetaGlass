@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>MetaGlass Nerd (NRD) DApp</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+  <div class="bg-grid"></div>
+  <div class="container">
+    <header class="header">
+      <h1><span class="logo">MetaGlass</span></h1>
+      <p class="tagline">Connect • Trade • Queue</p>
+      <nav class="nav-tabs">
+        <a href="./index.html" class="nav-tab active">Crowdfund</a>
+        <a href="./smartcont.html" class="nav-tab">Drop</a>
+      </nav>
+    </header>
+
+    <div class="main-layout">
+      <div class="card card-wallet card-full">
+        <div class="card-header">
+          <h3>Wallet</h3>
+          <div class="badges">
+            <span class="badge"><span class="badge-label">Chain</span><span id="chainId">-</span></span>
+            <span class="badge badge-status"><span class="badge-label">Network</span><span id="netStatus">-</span></span>
+          </div>
+        </div>
+        <button id="btnConnect" class="btn btn-primary">
+          <span class="btn-icon"></span>
+          Connect MetaMask
+        </button>
+
+        <div class="contract-info">
+          <div class="info-row"><span>Nerd</span><code id="nerdAddr">-</code></div>
+          <div class="info-row"><span>Crowdfund</span><code id="smartAddr">-</code></div>
+        </div>
+
+        <div class="kv">
+          <div class="kv-row"><span>Address</span><span id="myAddr" class="value">-</span></div>
+          <div class="kv-row"><span>ETH Balance</span><span id="ethBal" class="value">-</span></div>
+          <div class="kv-row"><span>NRD Balance</span><span id="myBal" class="value">-</span></div>
+          <div class="kv-row"><span>NRD Remaining</span><span id="tokensLeft" class="value">-</span></div>
+          <div class="kv-row"><span>Position</span><span id="myPos" class="value">-</span></div>
+        </div>
+      </div>
+
+      <div class="three-col">
+        <div class="card card-leaderboard">
+          <h3>Top 10 Holders <span class="live-badge">live</span></h3>
+          <div class="table-wrap">
+            <table class="table">
+              <thead><tr><th>#</th><th>Address</th><th>Balance</th></tr></thead>
+              <tbody id="top10Body"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3>Crowdfunding</h3>
+          <div class="stats">
+            <div class="stat"><span class="stat-label">Campaigns</span><b id="campaignCount">-</b></div>
+          </div>
+
+          <div class="input-group">
+            <label>Title</label>
+            <input id="campaignTitle" type="text" placeholder="My first campaign" />
+          </div>
+          <div class="input-group">
+            <label>Goal (ETH)</label>
+            <input id="campaignGoal" type="text" value="0.1" placeholder="0.1" />
+          </div>
+          <div class="input-group">
+            <label>Duration (hours)</label>
+            <input id="campaignDuration" type="text" value="24" placeholder="24" />
+          </div>
+          <button id="btnCreateCampaign" class="btn btn-primary">Create Campaign</button>
+          <div class="msg" id="createCampaignMsg"></div>
+
+          <div class="input-group">
+            <label>View campaign ID</label>
+            <input id="viewCampaignId" type="text" value="1" placeholder="1" />
+          </div>
+          <button id="btnLoadCampaign" class="btn btn-primary">Load Campaign</button>
+          <div class="msg campaign-details" id="campaignInfo"></div>
+          <div id="finalizeSection" style="display: none; margin-top: 16px;">
+            <button id="btnFinalizeCampaign" class="btn btn-primary">Finalize Campaign</button>
+            <div class="msg" id="finalizeMsg"></div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3>Contribute to Campaign</h3>
+          <div class="input-group">
+            <label>Campaign ID</label>
+            <input id="contribCampaignId" type="text" value="1" placeholder="1" />
+          </div>
+          <div class="input-group">
+            <label>Amount (NRD)</label>
+            <input id="contribAmountEth" type="text" value="10" placeholder="10" />
+          </div>
+          <p class="footnote">Rate: 1 NRD = 0.01 ETH (100 NRD per 1 ETH)</p>
+          <button id="btnContribute" class="btn btn-primary">Buy Queue Tokens</button>
+          <div class="msg" id="contributeMsg"></div>
+
+          <hr class="divider" />
+
+          <h4>Send NRD Tokens</h4>
+          <div class="input-group">
+            <label>Recipient address</label>
+            <input id="transferTo" type="text" placeholder="0x..." />
+          </div>
+          <div class="input-group">
+            <label>Amount (NRD)</label>
+            <input id="transferAmount" type="text" value="1" placeholder="1.0" />
+          </div>
+          <button id="btnSendTokens" class="btn btn-primary">Send Tokens</button>
+          <div class="msg" id="transferMsg"></div>
+        </div>
+      </div>
+    </div>
+
+  <script src="./config.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/ethers@6.13.2/dist/ethers.umd.min.js"></script>
+  <script src="./app.js"></script>
+</body>
+</html>
