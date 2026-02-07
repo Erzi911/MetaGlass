@@ -23,7 +23,7 @@ contract Nerd is ERC20, Ownable {
     event FeeExemptSet(address indexed user, bool exempt);
     event MinterSet(address indexed minter, bool allowed);
 
-    constructor(address _feeRecipient) ERC20("MetaGlass", "MTG") Ownable(msg.sender) {
+    constructor(address _feeRecipient) ERC20("NERD", "NRD") Ownable(msg.sender) {
         require(_feeRecipient != address(0));
         feeRecipient = _feeRecipient;
 
