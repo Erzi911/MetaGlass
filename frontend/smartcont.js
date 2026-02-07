@@ -34,7 +34,7 @@ function fmtError(e) {
   if (msg.includes("insufficient balance") || msg.includes("erc20insufficientbalance"))
     return "Not enough NRD tokens in your wallet.";
   if (msg.includes("missing revert data"))
-    return "Transaction rejected. Check sale/drop conditions above.";
+    return "Transaction rejected. Check drop conditions above.";
   return e?.shortMessage || e?.message || String(e);
 }
 
@@ -97,45 +97,6 @@ async function refreshWalletAndQueue() {
   } catch {
     $("myPos").textContent = "-";
   }
-}
-
-async function refreshSaleState() {
-  if (!browserProvider) return;
-  const smart = new ethers.Contract(cfg.SMARTCONT_ADDRESS, smartAbi, browserProvider);
-
-  const [saleActive, priceWeiPerToken, treasury] = await Promise.all([
-    smart.saleActive(),
-    smart.priceWeiPerToken(),
-    smart.treasury()
-  ]);
-
-  $("saleActive").textContent = saleActive ? "Yes" : "No";
-
-  const priceEth = fmtEth(priceWeiPerToken.toString());
-  $("pricePerToken").textContent = priceEth;
-  const treasuryEl = $("treasuryAddr");
-  treasuryEl.textContent = treasury;
-  treasuryEl.className = "address-long";
-
-  updateBuyEstimate();
-}
-
-function updateBuyEstimate() {
-  const ethStr = $("buyEthAmount").value.trim();
-  const priceStr = $("pricePerToken").textContent.trim();
-  if (!ethStr || !priceStr || priceStr === "-" || isNaN(parseFloat(ethStr)) || isNaN(parseFloat(priceStr))) {
-    $("buyTokensEstimate").textContent = "-";
-    return;
-  }
-
-  const ethIn = parseFloat(ethStr);
-  const priceEth = parseFloat(priceStr);
-  if (!priceEth || priceEth <= 0) {
-    $("buyTokensEstimate").textContent = "-";
-    return;
-  }
-  const tokens = ethIn / priceEth;
-  $("buyTokensEstimate").textContent = tokens.toFixed(4) + " NRD";
 }
 
 async function refreshQueueState() {
@@ -252,7 +213,6 @@ async function refreshAll() {
 
   await Promise.allSettled([
     refreshWalletAndQueue(),
-    refreshSaleState(),
     refreshQueueState(),
     refreshDropState()
   ]);
@@ -270,26 +230,6 @@ function startAutoRefresh() {
       ]);
     }
   }, 15000); 
-}
-
-async function buyTokens() {
-  $("buyTokensMsg").textContent = "";
-  try {
-    if (!smartWrite) throw new Error("Connect MetaMask first");
-    const ethStr = $("buyEthAmount").value.trim();
-    if (!ethStr || isNaN(parseFloat(ethStr)) || parseFloat(ethStr) <= 0) {
-      throw new Error("Enter a valid ETH amount");
-    }
-    const valueWei = ethers.parseEther(ethStr);
-    const tx = await smartWrite.buyTokens({ value: valueWei });
-    $("buyTokensMsg").textContent = "Pending: " + tx.hash;
-    await tx.wait();
-    $("buyTokensMsg").textContent = "Success: " + tx.hash;
-    await refreshAll();
-  } catch (e) {
-    const m = fmtError(e);
-    $("buyTokensMsg").textContent = m ? "Error: " + m : "";
-  }
 }
 
 async function refreshQueue() {
@@ -336,10 +276,8 @@ async function boot() {
   $("smartAddr").textContent = cfg.SMARTCONT_ADDRESS;
 
   $("btnConnect").addEventListener("click", connect);
-  $("btnBuyTokens").addEventListener("click", buyTokens);
   $("btnBuyGlasses").addEventListener("click", buyGlasses);
   $("btnRefreshQueue").addEventListener("click", refreshQueue);
-  $("buyEthAmount").addEventListener("input", updateBuyEstimate);
 
   await refreshAll();
 }

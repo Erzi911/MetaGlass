@@ -137,6 +137,13 @@ body {
   align-items: start;
 }
 
+.two-col {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(300px, 1fr));
+  gap: 24px;
+  align-items: start;
+}
+
 .card {
   flex: 1;
   min-width: 260px;
@@ -173,7 +180,6 @@ body {
   margin: 0;
 }
 
-/* Badges */
 .badges {
   display: flex;
   gap: 8px;
@@ -206,7 +212,6 @@ body {
   background: rgba(139, 92, 246, 0.08);
 }
 
-/* Buttons */
 .btn {
   display: inline-flex;
   align-items: center;
@@ -415,6 +420,9 @@ input::placeholder {
     flex-direction: column;
   }
   .three-col {
+    grid-template-columns: 1fr;
+  }
+  .two-col {
     grid-template-columns: 1fr;
   }
 }
